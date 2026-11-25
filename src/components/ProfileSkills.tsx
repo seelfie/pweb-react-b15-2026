@@ -1,12 +1,20 @@
 import { useRef, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
+import type { JobSource } from '../types'
 
 interface ProfileSkillsProps {
   skills: string[]
   onChange: (skills: string[]) => void
+  source: JobSource
+  onSourceChange: (source: JobSource) => void
 }
 
-export function ProfileSkills({ skills, onChange }: ProfileSkillsProps) {
+const SOURCE_OPTIONS: { value: JobSource; label: string }[] = [
+  { value: 'live', label: 'Remotive API (Live)' },
+  { value: 'fallback', label: 'Dataset Magang ID (Lokal)' },
+]
+
+export function ProfileSkills({ skills, onChange, source, onSourceChange }: ProfileSkillsProps) {
   const [skillInput, setSkillInput] = useState('')
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -36,8 +44,28 @@ export function ProfileSkills({ skills, onChange }: ProfileSkillsProps) {
 
   return (
     <aside className="profile-card">
-      <h2>Profil Skill</h2>
-      <p className="muted">Skill yang dimiliki oleh Kapten</p>
+      <h2>Profil Skill Kapten</h2>
+      <p className="muted">Digunakan untuk menghitung persentase kecocokan tiap lowongan.</p>
+
+      <div className="inline-form">
+        <input
+          ref={inputRef}
+          value={skillInput}
+          onChange={(event) => setSkillInput(event.target.value)}
+          onKeyDown={(event) => event.key === 'Enter' && addSkill()}
+          placeholder="Tambah skill..."
+          aria-invalid={error !== ''}
+        />
+        <button type="button" className="primary-icon" onClick={addSkill}>
+          Tambah
+        </button>
+      </div>
+      {error && (
+        <small className="form-error" role="alert">
+          {error}
+        </small>
+      )}
+
       <div className="skill-tags">
         {skills.map((skill) => (
           <span className="skill-chip" key={skill}>
@@ -48,19 +76,27 @@ export function ProfileSkills({ skills, onChange }: ProfileSkillsProps) {
           </span>
         ))}
       </div>
-      <div className="inline-form">
-        <input
-          ref={inputRef}
-          value={skillInput}
-          onChange={(event) => setSkillInput(event.target.value)}
-          onKeyDown={(event) => event.key === 'Enter' && addSkill()}
-          placeholder="Tambah skill..."
-        />
-        <button type="button" className="primary-icon" aria-label="Tambah skill" onClick={addSkill}>
-          <Plus size={18} />
-        </button>
+
+      <div className="source-selector" role="radiogroup" aria-labelledby="source-title">
+        <p id="source-title" className="source-title">
+          Sumber Data Lowongan
+        </p>
+        {SOURCE_OPTIONS.map((option) => (
+          <label
+            key={option.value}
+            className={`source-option${source === option.value ? ' is-active' : ''}`}
+          >
+            <input
+              type="radio"
+              name="job-source"
+              value={option.value}
+              checked={source === option.value}
+              onChange={() => onSourceChange(option.value)}
+            />
+            <span>{option.label}</span>
+          </label>
+        ))}
       </div>
-      {error && <small className="form-error">{error}</small>}
     </aside>
   )
 }

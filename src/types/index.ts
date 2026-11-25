@@ -46,3 +46,5 @@ export interface JobListing {
   salary: string
   tags: string[]
 }
+
+export type JobSource = 'live' | 'fallback'
