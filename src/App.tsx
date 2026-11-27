@@ -25,6 +25,10 @@ function App() {
     'TypeScript',
     'CSS',
   ])
+
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+
+
   const [applications, setApplications] = useLocalStorage<Application[]>('applications', [])
   // fitur 7: tambah 'offers'
   const [activeSection, setActiveSection] = useState<'explore' | 'manual' | 'pipeline' | 'offers'>('explore')
@@ -113,64 +117,66 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark"><BriefcaseBusiness size={20} /></span>
-          <div>
-            <strong>AKU MW MAGANG</strong>
-            <small>CAPTAIN'S WORKSPACE</small>
-          </div>
-        </div>
-        <nav>
-          <button
-            type="button"
-            className={activeSection === 'explore' ? 'nav-active' : ''}
-            onClick={() => setActiveSection('explore')}
-          >
-            <Compass size={16} /> Eksplorasi Lowongan
-          </button>
-          <button
-            type="button"
-            className={activeSection === 'manual' ? 'nav-active' : ''}
-            onClick={() => setActiveSection('manual')}
-          >
-            <BriefcaseBusiness size={16} /> Tambah Lamaran
-          </button>
-          <button
-            type="button"
-            className={activeSection === 'pipeline' ? 'nav-active' : ''}
-            onClick={() => setActiveSection('pipeline')}
-          >
-            <KanbanSquare size={16} /> Pipeline Lamaran ({applications.length})
-          </button>
-          {/* fitur 7: tombol navigasi bandingkan offer */}
-          <button
-            type="button"
-            className={activeSection === 'offers' ? 'nav-active' : ''}
-            onClick={() => setActiveSection('offers')}
-          >
-            <Scale size={16} /> Bandingkan Offer
-          </button>
-        </nav>
-        <div className="topbar-actions">
-          <BackupControls
-            applications={applications}
-            skills={skills}
-            onImport={importBackup}
-            onNotice={setNotice}
-          />
-          <button
-            type="button"
-            className="topbar-btn"
-            aria-label={theme === 'dark' ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
-            onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
-          >
-            {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            <span>{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
-          </button>
-          <div className="avatar"><UserRound size={18} /></div>
-        </div>
-      </header>
+      {!isDetailOpen && (
+              <header className="topbar">
+                  <div className="brand">
+                    <span className="brand-mark"><BriefcaseBusiness size={20} /></span>
+                    <div>
+                      <strong>AKU MW MAGANG</strong>
+                      <small>CAPTAIN'S WORKSPACE</small>
+                    </div>
+                  </div>
+                  <nav>
+                    <button
+                      type="button"
+                      className={activeSection === 'explore' ? 'nav-active' : ''}
+                      onClick={() => setActiveSection('explore')}
+                    >
+                      <Compass size={16} /> Eksplorasi Lowongan
+                    </button>
+                    <button
+                      type="button"
+                      className={activeSection === 'manual' ? 'nav-active' : ''}
+                      onClick={() => setActiveSection('manual')}
+                    >
+                      <BriefcaseBusiness size={16} /> Tambah Lamaran
+                    </button>
+                    <button
+                      type="button"
+                      className={activeSection === 'pipeline' ? 'nav-active' : ''}
+                      onClick={() => setActiveSection('pipeline')}
+                    >
+                      <KanbanSquare size={16} /> Pipeline Lamaran ({applications.length})
+                    </button>
+                    {/* fitur 7: tombol navigasi bandingkan offer */}
+                    <button
+                      type="button"
+                      className={activeSection === 'offers' ? 'nav-active' : ''}
+                      onClick={() => setActiveSection('offers')}
+                    >
+                      <Scale size={16} /> Bandingkan Offer
+                    </button>
+                  </nav>
+                  <div className="topbar-actions">
+                    <BackupControls
+                      applications={applications}
+                      skills={skills}
+                      onImport={importBackup}
+                      onNotice={setNotice}
+                    />
+                    <button
+                      type="button"
+                      className="topbar-btn"
+                      aria-label={theme === 'dark' ? 'Ganti ke mode terang' : 'Ganti ke mode gelap'}
+                      onClick={() => setTheme((current) => (current === 'dark' ? 'light' : 'dark'))}
+                    >
+                      {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+                      <span>{theme === 'dark' ? 'Terang' : 'Gelap'}</span>
+                    </button>
+                    <div className="avatar"><UserRound size={18} /></div>
+                  </div>
+              </header>
+      )}
 
       {conflicts.length > 0 && (
         <div className="conflict-banner global-conflict" role="alert">
@@ -221,6 +227,7 @@ function App() {
             skills={skills}
             onUpdate={updateApplication}
             onDelete={deleteApplication}
+            onDetailToggle={setIsDetailOpen}
           />
         )}
         {/* fitur 7: halaman offer comparator */}

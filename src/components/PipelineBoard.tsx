@@ -16,9 +16,10 @@ interface PipelineBoardProps {
   skills: string[]
   onUpdate: (application: Application) => void
   onDelete: (id: string) => void
+  onDetailToggle: (isOpen: boolean) => void
 }
 
-export function PipelineBoard({ applications, skills, onUpdate, onDelete }: PipelineBoardProps) {
+export function PipelineBoard({ applications, skills, onUpdate, onDelete, onDetailToggle }: PipelineBoardProps) {
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | 'ALL'>('ALL')
   const [onlyGhosting, setOnlyGhosting] = useState(false)
@@ -131,7 +132,9 @@ export function PipelineBoard({ applications, skills, onUpdate, onDelete }: Pipe
                 {isGhostingRisk(app) && <span className="ghost-badge">Rawan Ghosting</span>}
 
                 <div className="card-actions">
-                  <button type="button" className="save-button" onClick={() => setSelectedId(app.id)}>
+                  <button type="button" className="save-button" onClick={() => {
+                    setSelectedId(app.id) 
+                    onDetailToggle(true)}}>
                     Buka Detail
                   </button>
                   {canSimulate && (
@@ -158,9 +161,13 @@ export function PipelineBoard({ applications, skills, onUpdate, onDelete }: Pipe
           onUpdate={onUpdate}
           onDelete={(id) => {
             setSelectedId(null)
+            onDetailToggle(false)
             onDelete(id)
           }}
-          onClose={() => setSelectedId(null)}
+          onClose={() =>{
+            setSelectedId(null)
+            onDetailToggle(false)
+          }}
           interviewSlot={<InterviewTimer />}
         />
       )}
