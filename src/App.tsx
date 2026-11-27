@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { AlertTriangle, BriefcaseBusiness, Compass, KanbanSquare, Moon, Sun, UserRound } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react' 
+import { AlertTriangle, BriefcaseBusiness, Compass, KanbanSquare, Moon, Scale, Sun, UserRound } from 'lucide-react'
 import './App.css'
 import './pipeline.css'
 import './bonus.css'
@@ -9,6 +9,8 @@ import { JobExplorer } from './components/JobExplorer'
 import { ManualApplicationForm } from './components/ManualApplicationForm'
 import { BackupControls } from './components/BackupControls'
 import { PipelineBoard } from './components/PipelineBoard'
+import { StatsCards } from './components/StatsCards' 
+import { OfferComparator } from './components/OfferComparator' 
 import { useLocalStorage } from './hooks/useLocalStorage'
 import { findInterviewConflicts, formatDateTime } from './utils/pipeline'
 import type { BackupData } from './utils/backup'
@@ -24,13 +26,23 @@ function App() {
     'CSS',
   ])
   const [applications, setApplications] = useLocalStorage<Application[]>('applications', [])
-  const [activeSection, setActiveSection] = useState<'explore' | 'manual' | 'pipeline'>('explore')
+  // fitur 7: tambah 'offers'
+  const [activeSection, setActiveSection] = useState<'explore' | 'manual' | 'pipeline' | 'offers'>('explore')
   const [notice, setNotice] = useState('')
   const [theme, setTheme] = useLocalStorage<'light' | 'dark'>('theme', 'light')
+
+  // fitur 6: simpan lamaran yang baru dihapus + id timernya
+  const [deletedApp, setDeletedApp] = useState<Application | null>(null)
+  const undoTimer = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  // fitur 6: bersihkan timer kalo app ditutup
+  useEffect(() => {
+    return () => window.clearTimeout(undoTimer.current)
+  }, [])
 
   const conflicts = findInterviewConflicts(applications)
 
@@ -77,8 +89,26 @@ function App() {
     )
   }
 
+  // fitur 6: hapus + tampilkan toast Undo selama 5 detik
   function deleteApplication(id: string) {
+    const target = applications.find((application) => application.id === id)
+    if (!target) return
+
     setApplications((current) => current.filter((application) => application.id !== id))
+    setDeletedApp(target)
+
+    // hapus timer lama dulu, baru pasang timer baru (kalau hapus 2x berturut-turut)
+    window.clearTimeout(undoTimer.current)
+    undoTimer.current = window.setTimeout(() => setDeletedApp(null), 5000)
+  }
+
+  // fitur 6: kembalikan lamaran yang baru dihapus
+  function undoDelete() {
+    if (!deletedApp) return
+    setApplications((current) => [...current, deletedApp])
+    setDeletedApp(null)
+    window.clearTimeout(undoTimer.current)
+    setNotice(`Lamaran ${deletedApp.company} dikembalikan.`)
   }
 
   return (
@@ -112,6 +142,14 @@ function App() {
             onClick={() => setActiveSection('pipeline')}
           >
             <KanbanSquare size={16} /> Pipeline Lamaran ({applications.length})
+          </button>
+          {/* fitur 7: tombol navigasi bandingkan offer */}
+          <button
+            type="button"
+            className={activeSection === 'offers' ? 'nav-active' : ''}
+            onClick={() => setActiveSection('offers')}
+          >
+            <Scale size={16} /> Bandingkan Offer
           </button>
         </nav>
         <div className="topbar-actions">
@@ -155,6 +193,9 @@ function App() {
         </div>
       )}
 
+      {/* fitur 7: kartu statistik (derived state) */}
+      <StatsCards applications={applications} />
+
       <main className="main-layout">
         {activeSection === 'explore' && (
           <>
@@ -182,6 +223,10 @@ function App() {
             onDelete={deleteApplication}
           />
         )}
+        {/* fitur 7: halaman offer comparator */}
+        {activeSection === 'offers' && (
+          <OfferComparator applications={applications} skills={skills} />
+        )}
         {activeSection === 'manual' && (
           <div className="manual-layout">
             <ProfileSkills
@@ -198,6 +243,14 @@ function App() {
           </div>
         )}
       </main>
+
+      {/* fitur 6: toast undo */}
+      {deletedApp && (
+        <div className="undo-toast" role="status">
+          <span>Lamaran <strong>{deletedApp.company}</strong> telah dihapus.</span>
+          <button type="button" onClick={undoDelete}>Undo (5d)</button>
+        </div>
+      )}
     </div>
   )
 }

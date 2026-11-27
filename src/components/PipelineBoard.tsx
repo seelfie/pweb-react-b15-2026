@@ -5,6 +5,7 @@ import { applicationMatch } from '../utils/skills'
 import { formatDateTime, isGhostingRisk, shiftBackDays, sortApplications, type SortMode } from '../utils/pipeline'
 import { useSlashFocus } from '../hooks/useSlashFocus'
 import { ApplicationDetail } from './ApplicationDetail'
+import { InterviewTimer } from './InterviewTimer'
 
 const STATUSES: ApplicationStatus[] = [
   'WISHLIST', 'APPLIED', 'SCREENING', 'INTERVIEW', 'OFFER', 'REJECTED', 'GHOSTED',
@@ -160,6 +161,7 @@ export function PipelineBoard({ applications, skills, onUpdate, onDelete }: Pipe
             onDelete(id)
           }}
           onClose={() => setSelectedId(null)}
+          interviewSlot={<InterviewTimer />}
         />
       )}
     </section>
